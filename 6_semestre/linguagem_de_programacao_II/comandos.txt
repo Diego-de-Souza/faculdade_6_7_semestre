@@ -1,0 +1,2 @@
+docker stop postgres-dealhub   # Para o contêiner
+docker start postgres-dealhub  # Inicia novamente

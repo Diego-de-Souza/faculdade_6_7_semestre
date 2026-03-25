@@ -1,0 +1,8 @@
+The Video*.java source files are based on Cornell's CS3410 Logisim Evolution
+distribution.  I modified their Video.java video component improving the
+resolution and color depth.
+
+The rest of the source files are my conversion of Logisim 2.7.1's memory
+components to Logisim Evolution.
+
+Mark Craig
