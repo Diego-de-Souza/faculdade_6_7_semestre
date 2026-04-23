@@ -54,48 +54,156 @@ A unidade de controle, ao decodificar, aciona sinais conforme o tipo de instruç
 
 ---
 
-## 1. Instalação do Icarus Verilog (Windows)
+## 1. Instalação no Windows: MSYS2, Icarus Verilog e GTKWave
 
-### 1.1 Pelo Winget (recomendado)
+Há duas abordagens comuns: **MSYS2** (um único ambiente com `pacman` para Icarus e GTKWave — útil quando o Winget falha no download) ou **instaladores / Winget** separados.
 
-Abra o **PowerShell** ou **Terminal** e execute:
+### 1.1 MSYS2 (recomendado para Icarus + GTKWave)
+
+O [MSYS2](https://www.msys2.org/) fornece um terminal tipo Linux no Windows e o gestor de pacotes **`pacman`**, onde estão o **Icarus Verilog** e o **GTKWave** já empacotados para o ambiente **MINGW64**.
+
+#### Passo 1 — Instalar o MSYS2
+
+1. Descarregue o instalador em: `https://www.msys2.org/` (ficheiro do tipo `msys2-x86_64-….exe`).
+2. Execute o instalador. O caminho predefinido costuma ser **`C:\msys64`** (pode alterar, mas anote o caminho).
+3. No fim, deixe marcada a opção para abrir o MSYS2 se o instalador oferecer.
+
+#### Passo 2 — Atualizar o sistema de pacotes
+
+Abra o atalho **“MSYS2 MSYS”** (ou **MINGW64**, conforme as instruções do primeiro arranque) e execute:
+
+```bash
+pacman -Syu
+```
+
+Se pedir para **fechar a janela** e voltar a abrir, faça-o. Repita `pacman -Syu` até não haver mais atualizações obrigatórias.
+
+> **Nota:** podem aparecer avisos `Connection reset by peer` ao sincronizar espelhos. Normalmente basta **tentar de novo** mais tarde ou [ajustar espelhos](https://www.msys2.org/docs/mirror/) se o problema persistir.
+
+#### Passo 3 — Instalar Icarus Verilog e GTKWave
+
+Abra o terminal **“MSYS2 MINGW64”** (menu Iniciar — não confundir com “UCRT64” ou “MSYS” puro para este passo).
+
+Instale os dois pacotes de uma vez:
+
+```bash
+pacman -S mingw-w64-x86_64-iverilog mingw-w64-x86_64-gtkwave
+```
+
+Confirme com **`Y`** quando o `pacman` perguntar.
+
+#### Passo 4 — Verificar se os comandos existem
+
+Ainda no **MINGW64**:
+
+```bash
+iverilog -V
+vvp -V
+gtkwave --version
+```
+
+Os executáveis ficam em **`C:\msys64\mingw64\bin`** (ajuste se instalou o MSYS2 doutro sítio).
+
+#### Passo 5 — Terminal UCRT64 vs MINGW64
+
+Os pacotes `mingw-w64-x86_64-*` instalados acima colocam programas em **`mingw64`**. No terminal **UCRT64**, o comando `iverilog` pode aparecer como **não encontrado** porque o `PATH` desse perfil aponta para **`ucrt64`**, não para **`mingw64`**.
+
+**Soluções (escolha uma):**
+
+- Use sempre **“MSYS2 MINGW64”** para compilar, simular e abrir ondas neste projeto; ou  
+- Num terminal UCRT64, só para essa sessão:
+
+  ```bash
+  export PATH="/mingw64/bin:$PATH"
+  iverilog -V
+  ```
+
+- Ou instale as variantes **UCRT** do mesmo software, se existirem no repositório:
+
+  ```bash
+  pacman -Ss iverilog
+  pacman -Ss gtkwave
+  ```
+
+  e instale pacotes com prefixo `mingw-w64-ucrt-x86_64-` em vez de `mingw-w64-x86_64-`, se listados.
+
+#### Passo 6 — Usar Icarus e GTKWave no PowerShell do Windows
+
+Adicione ao **PATH** do Windows (variáveis de ambiente do utilizador ou do sistema):
+
+`C:\msys64\mingw64\bin`
+
+Feche e volte a abrir o **PowerShell**, depois:
+
+```powershell
+iverilog -V
+gtkwave --version
+```
+
+Sem isto, o PowerShell responde que `iverilog` ou `gtkwave` “não é reconhecido”.
+
+---
+
+### 1.2 Icarus Verilog pelo Winget (alternativa ao MSYS2)
+
+No **PowerShell**:
 
 ```powershell
 winget install --id Icarus.Verilog -e --accept-package-agreements --accept-source-agreements
 ```
 
-**Importante:** o identificador correto no catálogo atual é `Icarus.Verilog`. Se usar outro ID (por exemplo nomes antigos de pacotes), o Winget pode responder que **nenhum pacote** foi encontrado.
+**ID correto:** `Icarus.Verilog`.
 
-Após a instalação:
-
-1. **Feche e abra de novo** o terminal (para atualizar o `PATH`).
-2. Confira se os comandos existem:
+Após instalar, **reabra o terminal** e teste:
 
 ```powershell
 iverilog -V
 vvp -V
 ```
 
-Se aparecer “não é reconhecido como nome de cmdlet…”, o `PATH` pode não incluir a pasta do Icarus. Em instalações típicas no Windows, os executáveis ficam em:
+Caminho típico dos executáveis: `C:\Program Files\iverilog\bin` — adicione ao **PATH** se o comando não for encontrado.
 
-`C:\Program Files\iverilog\bin`
+#### Se o Winget falhar no download (`InternetOpenUrl` / `0x80072eff`)
 
-Adicione essa pasta ao **PATH** do sistema (Configurações → Sistema → Sobre → Configurações avançadas do sistema → Variáveis de ambiente) ou reabra o instalador e verifique opções relacionadas ao PATH.
+O pacote está correto; o problema costuma ser **rede, proxy, antivírus (inspeção HTTPS) ou firewall**.
 
-### 1.2 Instalação manual (se o Winget falhar no download)
+- Tente **descarregar o instalador no browser** a partir de `https://bleyer.org/icarus/` (instalador **x64**) e execute o `.exe` manualmente; ou  
+- Use a instalação via **MSYS2** (secção 1.1).
 
-Se o Winget exibir erro de rede (`InternetOpenUrl` / falha ao baixar), baixe o instalador no site do mantenedor do build para Windows, por exemplo:
+---
 
-`https://bleyer.org/icarus/`
+### 1.3 Icarus Verilog — instalador manual (Windows)
 
-Procure o instalador **x64** mais recente (ex.: `iverilog-v12-…-x64_setup.exe`), execute-o e depois confira o `PATH` como acima.
+1. Abra `https://bleyer.org/icarus/` no navegador.  
+2. Descarregue o instalador **x64** mais recente (ex.: `iverilog-v12-…-x64_setup.exe`).  
+3. Execute o instalador e confirme que `iverilog` e `vvp` estão no **PATH** (ou adicione `C:\Program Files\iverilog\bin` manualmente).
 
-### 1.3 GTKWave (visualização de ondas)
+---
 
-O Winget pode não listar o GTKWave na sua região. Opções:
+### 1.4 GTKWave sem MSYS2 (instalador oficial)
 
-- Baixe em: `https://gtkwave.sourceforge.net/`
-- Ou use outro instalador que você já utilize (Chocolatey, MSYS2, etc.), desde que o comando `gtkwave` fique disponível no terminal.
+Se **não** quiser o GTKWave pelo `pacman`:
+
+1. Descarregue o instalador em: `https://gtkwave.sourceforge.net/`  
+2. Instale e, se quiser usar na linha de comando, adicione a pasta de instalação do GTKWave ao **PATH** do Windows.
+
+No PowerShell, também pode abrir por **caminho completo**, por exemplo:
+
+```powershell
+& "C:\msys64\mingw64\bin\gtkwave.exe" "C:\Users\SEU_USER\Downloads\Von_Neumann\Von_Neumann\Verilog\VerilogBM-210-235.vcd"
+```
+
+(Ajuste utilizador e caminho do MSYS2.)
+
+#### Ver ondas no GTKWave (passo obrigatório)
+
+Depois de **Ficheiro → Abrir** o `.vcd`:
+
+1. No painel **SST** (árvore), clique num módulo (ex.: `u_cpu`).  
+2. Na lista de **sinais** em baixo, selecione um ou mais sinais (ex.: `clk`, `dbus[7:0]`).  
+3. Clique em **Append**.
+
+Só assim as formas de onda aparecem à direita; o GTKWave não desenha sinais que não tenham sido adicionados com **Append**.
 
 ---
 
@@ -163,13 +271,20 @@ Você deve ver mensagens de texto (`$display`) no terminal. O testbench também 
 
 ### 3.4 Ver as ondas no GTKWave
 
-Na mesma pasta `Verilog`:
+Na mesma pasta `Verilog` (ou com caminho completo para o `.vcd`):
 
 ```powershell
 gtkwave VerilogBM-210-235.vcd
 ```
 
-No GTKWave, expanda a hierarquia, selecione sinais de interesse e use **Append** para plotá-los.
+No terminal **MSYS2 MINGW64** (com GTKWave instalado pela secção 1.1):
+
+```bash
+cd "/c/caminho/para/Von_Neumann/Von_Neumann/Verilog"
+gtkwave VerilogBM-210-235.vcd
+```
+
+Depois de abrir o ficheiro: na árvore **SST** escolha um módulo (ex.: `u_cpu`), selecione sinais na lista inferior e clique em **Append** — ver detalhe na **secção 1.4**.
 
 ### 3.5 Duração da simulação
 
@@ -253,11 +368,13 @@ Cada instrução válida deve ser mapeada para **8 bits** coerentes com essa tab
 
 | Objetivo | Ação |
 |----------|------|
-| Instalar simulador Verilog (Windows) | `winget install --id Icarus.Verilog -e` |
+| Instalar MSYS2 + Icarus + GTKWave | Secção **1.1** (`pacman -S mingw-w64-x86_64-iverilog mingw-w64-x86_64-gtkwave` no **MINGW64**) |
+| Instalar só Icarus (Winget) | `winget install --id Icarus.Verilog -e` (secção **1.2**) |
+| PATH no PowerShell para MSYS2 | Adicionar `C:\msys64\mingw64\bin` (ajustar caminho da instalação) |
 | Ir para a pasta de simulação | `cd ...\Von_Neumann\Verilog` |
 | Compilar modelo comportamental | Comando `iverilog -o von_neumann.vvp` da seção 3.2 |
 | Rodar | `vvp von_neumann.vvp` |
-| Ver ondas | `gtkwave VerilogBM-210-235.vcd` |
+| Ver ondas | `gtkwave VerilogBM-210-235.vcd` → módulo na SST → sinais → **Append** (secção **1.4**) |
 | Mudar o programa | Editar `Verilog/Behavioral Model/RAM.v`, salvar, recompilar |
 | Abrir esquemático | Logisim Evolution → abrir `arc_von_neumann.circ` ou `ALU.circ` |
 
@@ -265,4 +382,4 @@ Cada instrução válida deve ser mapeada para **8 bits** coerentes com essa tab
 
 ## 8. Créditos e contexto
 
-Projeto educacional de CPU Von Neumann de 8 bits (README expandido para instalação, comandos corretos do Icarus e uso detalhado da RAM e da simulação). Contribuidores citados no código-fonte Verilog incluem Praveen Kumar Gupta e Durvesh Bhalekar.
+Projeto educacional de CPU Von Neumann de 8 bits (README com instalação de **MSYS2**, **Icarus Verilog**, **GTKWave**, comandos de simulação e uso da RAM). Contribuidores citados no código-fonte Verilog incluem Praveen Kumar Gupta e Durvesh Bhalekar.
